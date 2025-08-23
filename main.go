@@ -7,27 +7,30 @@ import (
 
 	//wf "github.com/prashantsb/workflow-manager/pkg/workflow"
 	"github.com/prashantsb/workflow-manager/pkg/dag"
+	"github.com/prashantsb/workflow-manager/pkg/dagdef"
 	"github.com/prashantsb/workflow-manager/pkg/parser"
 )
 
 const (
-	persistFile = "workflow-state.json"
+	persistFile       = "workflow-state.json"
+	dagDefinationFile = "pkg/dagdef/workflow.dot"
 )
-
-var dotDAG = `digraph G {
-	A -> B;
-	`
 
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Millisecond)
 	defer cancel()
 
-	prs := parser.NewDOTParser(dotDAG)
-	if err := prs.Validate(dotDAG); err != nil {
+	dagstr, err := dagdef.GetDAGFromDefination(dagDefinationFile)
+	if err != nil {
 		panic(err)
 	}
 
-	cdag, err := prs.Parse(dotDAG)
+	prs := parser.NewDOTParser(dagstr)
+	if err := prs.Validate(dagstr); err != nil {
+		panic(err)
+	}
+
+	cdag, err := prs.Parse(dagstr)
 	if err != nil {
 		panic(err)
 	}

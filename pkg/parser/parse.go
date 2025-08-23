@@ -26,3 +26,7 @@ func (p *dotParser) Validate(dot string) error {
 	// This would typically involve checking the DOT syntax and structure.
 	return nil
 }
+
+func (p *dotParser) From() string {
+	return p.from
+}

@@ -1,0 +1,40 @@
+digraph G {
+    // Infra Workflow
+    subgraph cluster_infra {
+        Net -> VM;
+        Stor -> VM;
+        VM -> InfraR;
+        InfraR -> PreChk;
+    }
+
+    // Database Workflow
+    subgraph cluster_db {
+        ProvDB -> Schema;
+        Schema -> DBR;
+        DBR -> PreChk;
+    }
+
+    // Monitoring Workflow
+    subgraph cluster_mon {
+        ProvMon -> Hook;
+        Hook -> MonR;
+        MonR -> E2E;
+    }
+
+    // Application Workflow
+    subgraph cluster_app {
+        PreChk -> Deploy;
+        Deploy -> Smoke;
+        Smoke -> AppR;
+        AppR -> SecScan;
+        SecScan -> E2E;
+    }
+
+    // Commit Phase (serialized join point)
+    subgraph cluster_commit {
+        E2E -> Commit;
+        Commit -> Roll;
+        Roll -> Notify;
+        Notify -> Sink;
+    }
+}
