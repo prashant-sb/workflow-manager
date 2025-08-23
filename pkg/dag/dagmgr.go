@@ -3,25 +3,25 @@ package dag
 import (
 	"context"
 	"fmt"
-	"io"
 )
 
-// dagDefination implements the DAGManager interface.
-type dagDefination struct {
-	peristHandle io.ReadWriter
-	dag          DAG
-}
+// DAGManager orchestrates execution of a DAG.
+type DAGManager interface {
+	// Load the DAG definition
+	Load(dag DAGOps) error
 
-// NewDagManager creates a new DAGManager instance.
-func NewDagManager(dag DAG, iorw io.ReadWriter) DAGManager {
-	return &dagDefination{
-		dag:          dag,
-		peristHandle: iorw,
-	}
+	// Execute the DAG (with parallelism, joins, waits)
+	Execute(ctx context.Context) error
+
+	// Commit section ensures exclusive access.
+	Commit(ctx context.Context) error
+
+	// Print the DAG structure for debugging.
+	Print(ctx context.Context)
 }
 
 // Load the DAG definition.
-func (d *dagDefination) Load(dag DAG) error {
+func (d *DAG) Load(dag DAGOps) error {
 	if d.dag.isAcyclic() {
 		d.dag = dag
 		return nil
@@ -30,7 +30,7 @@ func (d *dagDefination) Load(dag DAG) error {
 }
 
 // Execute the DAG with parallelism, joins, and waits.
-func (d *dagDefination) Execute(ctx context.Context) error {
+func (d *DAG) Execute(ctx context.Context) error {
 	// Implementation of DAG execution logic goes here.
 	// This would typically involve traversing the DAG, executing nodes,
 	// handling parallel execution, and managing dependencies.
@@ -38,18 +38,18 @@ func (d *dagDefination) Execute(ctx context.Context) error {
 }
 
 // Commit section ensures exclusive access for the provided function.
-func (d *dagDefination) Commit(ctx context.Context, iorw io.ReadWriter) error {
+func (d *DAG) Commit(ctx context.Context) error {
 	// Implementation of commit logic goes here.
 	// This would typically involve acquiring a lock or ensuring that
 	// the function is executed in a thread-safe manner.
 	return nil
 }
 
-func (d *dagDefination) Print(ctx context.Context) {
+func (d *DAG) Print(ctx context.Context) {
 	// Implementation of printing the DAG structure for debugging.
 	// This would typically involve iterating over the nodes and edges
 	// and printing their details.
-	nodes := d.dag.nodes()
+	nodes := d.dag.vertices()
 	for _, node := range nodes {
 		fmt.Printf("Node ID: %s\n", node.ID())
 		deps := d.dag.dependencies(node.ID())
@@ -58,5 +58,13 @@ func (d *dagDefination) Print(ctx context.Context) {
 		} else {
 			fmt.Println("No dependencies")
 		}
+	}
+}
+
+// NewDagManager creates a new DAGManager instance.
+func NewDagManager(dag DAGOps, pt Persist) DAGManager {
+	return &DAG{
+		dag:     dag,
+		persist: pt,
 	}
 }
