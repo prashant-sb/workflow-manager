@@ -61,7 +61,6 @@ func (p *dotParser) Parse() (dag.DAGOps, error) {
 
 		// Exit subgraph
 		if line == "}" {
-			currentGroup = ""
 			continue
 		}
 

@@ -36,7 +36,7 @@ func main() {
 	}
 
 	dmgr := dag.NewDagManager(cdag, fp)
-	dmgr.Load(cdag)
+	_ = dmgr.Load(cdag)
 	dmgr.Print(ctx)
-	dmgr.Commit(ctx)
+	_ = dmgr.Commit(ctx)
 }
