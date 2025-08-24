@@ -4,22 +4,22 @@ import (
 	"context"
 	"os"
 
-	"github.com/prashantsb/workflow-manager/pkg/dag"
+	"github.com/prashantsb/workflow-manager/pkg/tasks"
 )
 
 // common DAG definition configuration if any
 
-var TaskRegistry = map[string]*dag.Task{
-	"Net": &dag.Task{
-		Id: "Net", SubGraph: "", Fn: func(ctx context.Context) error {
+var TaskRegistry = map[string]*tasks.Task{
+	"Net": &tasks.Task{
+		TaskId: "Net", WorkflowId: "", Fn: func(ctx context.Context) error {
 			// Simulate network setup
 			return nil
 		}},
-	"VM": &dag.Task{Id: "VM", SubGraph: "", Fn: func(ctx context.Context) error {
+	"VM": &tasks.Task{TaskId: "VM", WorkflowId: "", Fn: func(ctx context.Context) error {
 		// Simulate VM setup
 		return nil
 	}},
-	"App": &dag.Task{Id: "App", SubGraph: "", Fn: func(ctx context.Context) error {
+	"App": &tasks.Task{TaskId: "App", WorkflowId: "", Fn: func(ctx context.Context) error {
 		// Simulate App setup
 		return nil
 	}},

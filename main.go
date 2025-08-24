@@ -26,10 +26,6 @@ func main() {
 	}
 
 	prs := parser.NewDOTParser(dagstr)
-	/*if err := prs.Validate(); err != nil {
-		panic(err)
-	}*/
-
 	cdag, err := prs.Parse(dagdef.TaskRegistry)
 	if err != nil {
 		panic(err)

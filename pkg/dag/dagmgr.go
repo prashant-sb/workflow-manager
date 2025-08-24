@@ -22,11 +22,11 @@ type DAGManager interface {
 
 // Load the DAG definition.
 func (d *DAG) Load(dag DAGOps) error {
-	if d.dag.isAcyclic() {
+	if d.dag.IsAcyclic() {
 		d.dag = dag
 		return nil
 	}
-	return fmt.Errorf("the provided DAG is not acyclic")
+	return fmt.Errorf("the DAG contains cycles")
 }
 
 // Execute the DAG with parallelism, joins, and waits.
