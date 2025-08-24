@@ -1,0 +1,138 @@
+---
+versions:
+- version: v1
+  workflows:
+  - workflowId: infra
+    tasks:
+    - taskId: Net
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+    - taskId: Stor
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+    - taskId: VM
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+    - taskId: InfraR
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3
+    - taskId: PreChk
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3
+
+  - workflowId: db
+    tasks:
+    - taskId: ProvDB
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+    - taskId: Schema
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+    - taskId: DBR
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3
+
+  - workflowId: mon
+    tasks:
+    - taskId: ProvMon
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+    - taskId: Hook
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+    - taskId: MonR
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3
+    - taskId: E2E
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3
+
+  - workflowId: app
+    tasks:
+    - taskId: Deploy
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+    - taskId: Smoke
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+    - taskId: AppR
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3
+    - taskId: SecScan
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: true
+        retryCount: 0
+        maxRetry: 3
+
+  - workflowId: commit
+    tasks:
+    - taskId: Commit
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3
+    - taskId: Roll
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3
+    - taskId: Notify
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3
+    - taskId: Sink
+      taskConfig:
+        waitForCompletion: true
+        allowParallel: false
+        retryCount: 0
+        maxRetry: 3

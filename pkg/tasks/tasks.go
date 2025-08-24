@@ -1,6 +1,11 @@
 package tasks
 
-import "context"
+import (
+	"context"
+	"fmt"
+
+	"github.com/prashantsb/workflow-manager/pkg/preserver"
+)
 
 const (
 	// infinite retries
@@ -15,22 +20,32 @@ type Vertex interface {
 }
 
 type TaskParams struct {
-	WaitForCompletion bool
-	AllowParallel     bool
-	RetryCount        uint
-	MaxRetry          int
+	WaitForCompletion bool `yaml:"waitForCompletion"`
+	AllowParallel     bool `yaml:"allowParallel"`
+	RetryCount        int  `yaml:"retryCount"`
+	MaxRetry          int  `yaml:"maxRetry"`
+}
+
+type Config struct {
+	Versions []Version `yaml:"versions"`
+}
+
+type Version struct {
+	Version   string     `yaml:"version"`
+	Workflows []Workflow `yaml:"workflows"`
+}
+
+type Workflow struct {
+	WorkflowID string `yaml:"workflowId"`
+	Tasks      []Task `yaml:"tasks"`
 }
 
 // Task is a concrete implementation of Vertex.
 type Task struct {
-	TaskId     string
-	WorkflowId string
-	TaskConfig *TaskParams
-	Fn         func(ctx context.Context) error
-}
-
-func NewTask(id, grp string, fn func(ctx context.Context) error) Vertex {
-	return &Task{TaskId: id, Fn: fn, WorkflowId: grp}
+	TaskID           string     `yaml:"taskId"`
+	TaskConfig       TaskParams `yaml:"taskConfig"`
+	Fn               RunnerFunc
+	parentWorkflowID string
 }
 
 func DefaultTaskParams() *TaskParams {
@@ -43,7 +58,7 @@ func DefaultTaskParams() *TaskParams {
 }
 
 func (t *Task) ID() string {
-	return t.TaskId
+	return t.TaskID
 }
 
 func (t *Task) Run(ctx context.Context) error {
@@ -52,10 +67,52 @@ func (t *Task) Run(ctx context.Context) error {
 }
 
 func (t *Task) WorkflowID() string {
-	return t.WorkflowId
+	return t.parentWorkflowID
+
 }
 
-func (t *Task) WithParams(params *TaskParams) *Task {
-	t.TaskConfig = params
-	return t
+func NewTaskConfigFromYaml(in string) (*Config, error) {
+	cfg := &Config{}
+	fp, err := preserver.NewConfigHandler[Config](in)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := fp.Load(cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func (cfg *Config) GetTasksMap(ver string) (map[string]*Task, error) {
+	tasksMap := make(map[string]*Task)
+
+	for _, version := range cfg.Versions {
+		if version.Version == ver {
+			for _, wf := range version.Workflows {
+				for _, task := range wf.Tasks {
+					// Set default params if not provided
+					if task.TaskConfig == (TaskParams{}) {
+						task.TaskConfig = *DefaultTaskParams()
+					}
+					task.parentWorkflowID = wf.WorkflowID
+					// Here, you would typically assign the actual function to task.Fn
+					// For example:
+					Fn, err := getFunctionByID(task.TaskID)
+					if err != nil {
+						return nil, err
+					}
+					task.Fn = Fn
+					tasksMap[task.TaskID] = &task
+				}
+			}
+		}
+	}
+
+	if len(tasksMap) == 0 {
+		return nil, fmt.Errorf("no tasks found for version %s", ver)
+	}
+
+	return tasksMap, nil
 }
