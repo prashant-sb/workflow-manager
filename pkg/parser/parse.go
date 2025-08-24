@@ -6,10 +6,11 @@ import (
 	"strings"
 
 	"github.com/prashantsb/workflow-manager/pkg/dag"
+	"github.com/prashantsb/workflow-manager/pkg/tasks"
 )
 
 type DOTParser interface {
-	Parse(map[string]*dag.Task) (dag.DAGOps, error)
+	Parse(map[string]*tasks.Task) (dag.DAGOps, error)
 	Validate(dag.DagAttributes) error
 }
 
@@ -21,7 +22,7 @@ func NewDOTParser(wf string) DOTParser {
 	return &dotParser{from: strings.NewReader(wf)}
 }
 
-func (p *dotParser) Parse(taskRegistry map[string]*dag.Task) (dag.DAGOps, error) {
+func (p *dotParser) Parse(taskRegistry map[string]*tasks.Task) (dag.DAGOps, error) {
 	var currentGroup string
 	dag := dag.NewDAG()
 	scanner := bufio.NewScanner(p.from)
@@ -60,14 +61,14 @@ func (p *dotParser) Parse(taskRegistry map[string]*dag.Task) (dag.DAGOps, error)
 
 			// Add or update vertex with group
 			if t, ok := taskRegistry[from]; ok {
-				t.SubGraph = currentGroup
+				t.WorkflowId = currentGroup
 				dag.AddVertex(t)
 			} else {
 				return nil, fmt.Errorf("task %s not found in registry", from)
 			}
 
 			if t, ok := taskRegistry[to]; ok {
-				t.SubGraph = currentGroup
+				t.WorkflowId = currentGroup
 				dag.AddVertex(t)
 			} else {
 				return nil, fmt.Errorf("task %s not found in registry", to)
@@ -90,5 +91,8 @@ func (p *dotParser) Parse(taskRegistry map[string]*dag.Task) (dag.DAGOps, error)
 func (p *dotParser) Validate(d dag.DagAttributes) error {
 	// Implementation of validation logic goes here.
 	// This would typically involve checking the DOT syntax and structure.
-	return nil
+	if d.IsAcyclic() {
+		return nil
+	}
+	return fmt.Errorf("the DAG contains cycles")
 }

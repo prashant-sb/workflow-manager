@@ -1,22 +1,16 @@
 package dag
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/prashantsb/workflow-manager/pkg/preserver"
+	"github.com/prashantsb/workflow-manager/pkg/tasks"
 )
 
 type Persist = preserver.Preserve[PresistAttrib]
+type Vertex = tasks.Vertex
 type adjacencyList = map[string][]string
-type VertexMap = map[string]Vertex
-
-// Vertex represents a unit of execution in the DAG.
-type Vertex interface {
-	ID() string
-	Run(ctx context.Context) error
-	Group() string
-}
+type vertexMap = map[string]Vertex
 
 // DAGOps represents a directed acyclic graph of nodes.
 type DAGOps interface {
@@ -24,7 +18,7 @@ type DAGOps interface {
 	AddEdge(from, to string) error
 	vertices() []Vertex
 	dependencies(nodeID string) []string
-	isAcyclic() bool
+	IsAcyclic() bool
 }
 
 type VertexState struct {
@@ -36,16 +30,9 @@ type PresistAttrib struct {
 	Vertices map[string]VertexState `json:"vertices"`
 }
 
-// Task is a concrete implementation of Vertex.
-type Task struct {
-	Id       string
-	SubGraph string
-	Fn       func(ctx context.Context) error
-}
-
 // DagAttributes implements DAGOps interface.
 type DagAttributes struct {
-	verts VertexMap
+	verts vertexMap
 	edges adjacencyList
 }
 
@@ -55,27 +42,11 @@ type DAG struct {
 	dag     DAGOps
 }
 
-func NewTask(id, grp string, fn func(ctx context.Context) error) Vertex {
-	return &Task{Id: id, Fn: fn, SubGraph: grp}
-}
-
-func (t *Task) ID() string {
-	return t.Id
-}
-
-func (t *Task) Run(ctx context.Context) error {
-	return t.Fn(ctx)
-}
-
-func (t *Task) Group() string {
-	return t.SubGraph
-}
-
 // NewDAG creates a new empty DAG.
 func NewDAG() DAGOps {
 	return &DagAttributes{
-		verts: make(map[string]Vertex),
-		edges: make(map[string][]string),
+		verts: make(vertexMap),
+		edges: make(adjacencyList),
 	}
 }
 
@@ -110,7 +81,7 @@ func (d *DagAttributes) dependencies(nodeID string) []string {
 }
 
 // cycle detection using DFS
-func (d *DagAttributes) isAcyclic() bool {
+func (d *DagAttributes) IsAcyclic() bool {
 	visited := make(map[string]bool)
 	recStack := make(map[string]bool)
 
