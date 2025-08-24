@@ -9,8 +9,12 @@ import (
 	"github.com/prashantsb/workflow-manager/pkg/tasks"
 )
 
+const (
+	taskConfigFile = "taskconfig.yaml"
+)
+
 type DOTParser interface {
-	Parse(map[string]*tasks.Task) (dag.DAGOps, error)
+	Parse() (dag.DAGOps, error)
 	Validate(dag.DagAttributes) error
 }
 
@@ -22,10 +26,20 @@ func NewDOTParser(wf string) DOTParser {
 	return &dotParser{from: strings.NewReader(wf)}
 }
 
-func (p *dotParser) Parse(taskRegistry map[string]*tasks.Task) (dag.DAGOps, error) {
+func (p *dotParser) Parse() (dag.DAGOps, error) {
 	var currentGroup string
 	dag := dag.NewDAG()
 	scanner := bufio.NewScanner(p.from)
+
+	taskCfg, err := tasks.NewTaskConfigFromYaml(taskConfigFile)
+	if err != nil {
+		return nil, err
+	}
+
+	taskRegistry, err := taskCfg.GetTasksMap("v1")
+	if err != nil {
+		return nil, err
+	}
 
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -40,13 +54,13 @@ func (p *dotParser) Parse(taskRegistry map[string]*tasks.Task) (dag.DAGOps, erro
 			parts := strings.Fields(line)
 			if len(parts) >= 2 {
 				currentGroup = strings.TrimSpace(parts[1])
+				fmt.Printf("Entering subgraph: %s\n", currentGroup)
 			}
 			continue
 		}
 
 		// Exit subgraph
 		if line == "}" {
-			currentGroup = ""
 			continue
 		}
 
@@ -61,14 +75,14 @@ func (p *dotParser) Parse(taskRegistry map[string]*tasks.Task) (dag.DAGOps, erro
 
 			// Add or update vertex with group
 			if t, ok := taskRegistry[from]; ok {
-				t.WorkflowId = currentGroup
+				//t.WorkflowId = currentGroup
 				dag.AddVertex(t)
 			} else {
 				return nil, fmt.Errorf("task %s not found in registry", from)
 			}
 
 			if t, ok := taskRegistry[to]; ok {
-				t.WorkflowId = currentGroup
+				//t.WorkflowId = currentGroup
 				dag.AddVertex(t)
 			} else {
 				return nil, fmt.Errorf("task %s not found in registry", to)

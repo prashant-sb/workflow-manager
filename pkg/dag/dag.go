@@ -7,10 +7,10 @@ import (
 	"github.com/prashantsb/workflow-manager/pkg/tasks"
 )
 
-type Persist = preserver.Preserve[PresistAttrib]
 type Vertex = tasks.Vertex
-type adjacencyList = map[string][]string
 type vertexMap = map[string]Vertex
+type adjacencyList = map[string][]string
+type Persist = preserver.Preserve[PresistAttrib]
 
 // DAGOps represents a directed acyclic graph of nodes.
 type DAGOps interface {

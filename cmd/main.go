@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	//wf "github.com/prashantsb/workflow-manager/pkg/workflow"
 	"github.com/prashantsb/workflow-manager/pkg/dag"
 	"github.com/prashantsb/workflow-manager/pkg/dagdef"
 	"github.com/prashantsb/workflow-manager/pkg/parser"
@@ -26,15 +25,18 @@ func main() {
 	}
 
 	prs := parser.NewDOTParser(dagstr)
-	cdag, err := prs.Parse(dagdef.TaskRegistry)
+	cdag, err := prs.Parse()
 	if err != nil {
 		panic(err)
 	}
 
-	fp := preserver.NewFilePreserver[dag.PresistAttrib](persistFile)
-	dmgr := dag.NewDagManager(cdag, fp)
+	fp, err := preserver.NewConfigHandler[dag.PresistAttrib](persistFile)
+	if err != nil {
+		panic(err)
+	}
 
-	dmgr.Load(cdag)
+	dmgr := dag.NewDagManager(cdag, fp)
+	_ = dmgr.Load(cdag)
 	dmgr.Print(ctx)
-	dmgr.Commit(ctx)
+	_ = dmgr.Commit(ctx)
 }
