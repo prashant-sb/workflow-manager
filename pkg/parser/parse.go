@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	taskConfigFile = "taskconfig.yaml"
+	taskConfigFile = "pkg/dagdef/taskconfig.yaml"
 )
 
 type DOTParser interface {
