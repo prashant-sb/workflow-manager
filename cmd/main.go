@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	persistFile       = "workflow-state.json"
+	persistFile       = "pkg/dagdef/workflow-state.json"
 	dagDefinationFile = "pkg/dagdef/workflow.dot"
 )
 

@@ -97,8 +97,6 @@ func (cfg *Config) GetTasksMap(ver string) (map[string]*Task, error) {
 						task.TaskConfig = *DefaultTaskParams()
 					}
 					task.parentWorkflowID = wf.WorkflowID
-					// Here, you would typically assign the actual function to task.Fn
-					// For example:
 					Fn, err := getFunctionByID(task.TaskID)
 					if err != nil {
 						return nil, err
